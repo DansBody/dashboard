@@ -8,6 +8,7 @@ import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import avatar from "../data/avatar.jpg";
 import { Cart, Chat, Notification, UserProfile } from ".";
 import { useStateContext } from "../contexts/ContextProvider";
+import { Tooltip } from "bootstrap";
 
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   <TooltipComponent content={title} position="BottomCenter">
@@ -27,7 +28,33 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
 );
 
 const Navbar = () => {
-  const { activeMenu, setActiveMenu } = useStateContext();
+  const {
+    activeMenu,
+    setActiveMenu,
+    isClicked,
+    setIsClicked,
+    handleClick,
+    screenSize,
+    setScreenSize,
+  } = useStateContext();
+
+  useEffect(() => {
+    const handdleResize = () => setScreenSize(window.innerWidth);
+
+    window.addEventListener('resize',handdleResize)
+  
+    handdleResize();
+
+    return () => window.removeEventListener('resize', handdleResize);
+  }, [])
+
+  useEffect(() => {
+    if(screenSize <= 900){
+      setActiveMenu(false);
+    } else {
+      setActiveMenu(true);
+    }
+  },[screenSize])
 
   return (
     <div className="flex justify-between p-2 md:mx-6 relative">
@@ -38,12 +65,48 @@ const Navbar = () => {
         icon={<AiOutlineMenu />}
       />
       <div className="flex">
+        {/* 購物車按鈕 */}
         <NavButton
-          title="Menu"
-          customFunc={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)}
+          title="Cart"
+          customFunc={() => handleClick("cart")}
           color="blue"
-          icon={<AiOutlineMenu />}
+          icon={<FiShoppingCart />}
         />
+        {/* 聊天室窗按鈕 */}
+        <NavButton
+          title="Chat"
+          dotColor="#03C9D7"
+          customFunc={() => handleClick("chat")}
+          color="blue"
+          icon={<BsChatLeft />}
+        />
+        {/* 通知按鈕 */}
+        <NavButton
+          title="Notification"
+          dotColor="#03C9D7"
+          customFunc={() => handleClick("notification")}
+          color="blue"
+          icon={<RiNotification3Line />}
+        />
+        {/* 使用者資訊按鈕 */}
+        <TooltipComponent content="Profile" position="BottomCenter">
+          <div
+            className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg"
+            onClick={() => handleClick("userProfile")}
+          >
+            <img className="rounded-full w-8 h-8" src={avatar} />
+            <p>
+              <span className="text-gray-400 text-14">Hi, </span>{" "}
+              <span className="text-gray-400 ml-1 text-14">Daniel</span>
+            </p>
+            <MdKeyboardArrowDown className="text-gray-400 text-14" />
+          </div>
+        </TooltipComponent>
+
+        {isClicked.cart && <Cart />}
+        {isClicked.chat && <Chat />}
+        {isClicked.notification && <Notification />}
+        {isClicked.userProfile && <UserProfile />}
       </div>
     </div>
   );
